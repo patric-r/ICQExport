@@ -29,7 +29,7 @@ Thank you
 ================
 
 Thanks to Miranda project for providing a very helpful description of the database format:
-http://trac.miranda-ng.org/browser/branches/trunk/plugins/Import/docs/import-ICQ_Db_Specs.txt?rev=8177
+https://raw.githubusercontent.com/miranda-ng/miranda-ng/master/plugins/Import/docs/import-ICQ_Db_Specs.txt
 
 License
 =======
