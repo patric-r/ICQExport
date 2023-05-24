@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -352,7 +353,7 @@ public class ICQExport {
 			return "";
 		byte[] msg = new byte[length - 1];
 		datIn.read(msg);
-		String msgText = new String(msg);
+		String msgText = new String(msg, Charsets.ISO_8859_1);
 		datIn.skipBytes(1); // skip 0x00 separator
 		return msgText;
 	}
