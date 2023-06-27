@@ -3,7 +3,8 @@ ICQExport
 
 Minimalistic ICQ message history HTML exporter (prior to ICQ 2003b)
 
-Works directly on the database file, no ICQ installation required.
+Works directly on the database file, no ICQ installation required.<br>
+It works on a best-effort/heuristic approach and therefore tries to extract ICQ messages from corrupted/truncated database files as well.
 
 Currently only tested with ICQ2000b database files, however, it should work with the database files from the following versions:
 * ICQ 99a
