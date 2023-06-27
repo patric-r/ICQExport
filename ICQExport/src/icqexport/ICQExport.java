@@ -52,11 +52,11 @@ import com.mindprod.ledatastream.LERandomAccessFile;
  */
 public class ICQExport {
 
-	public static byte[] magic = new byte[] { 0x23, (byte) 0xA3, (byte) 0xDB,
+	public static byte[] EVENT_SIG = new byte[] { 0x23, (byte) 0xA3, (byte) 0xDB,
 			(byte) 0xDF, (byte) 0xB8, (byte) 0xD1, 0x11, (byte) 0x8A, 0x65,
 			0x00, 0x60, 0x08, 0x71, (byte) 0xA3, (byte) 0x91 };
 
-	public static byte[] magic2 = new byte[] { (byte) 0x3b, (byte) 0xc1,
+	public static byte[] LONG_MESSAGE_SIG = new byte[] { (byte) 0x3b, (byte) 0xc1,
 			(byte) 0x5c, (byte) 0x5c, (byte) 0x95, (byte) 0xd3, (byte) 0x11,
 			(byte) 0x8d, (byte) 0xd7, 0x00, 0x10, 0x4b, (byte) 0x06,
 			(byte) 0x46, 0x2e };
@@ -118,7 +118,7 @@ public class ICQExport {
 			while (true) {
 				if (datIn.read(sig) != sig.length)
 					break;
-				if (Arrays.equals(sig, magic) || Arrays.equals(sig, magic2)) {
+				if (Arrays.equals(sig, EVENT_SIG) || Arrays.equals(sig, LONG_MESSAGE_SIG)) {
 					long startPos = datIn.getFilePointer() - 0x1c;
 					datIn.seek(startPos);
 					int size = datIn.readInt();
@@ -191,7 +191,7 @@ public class ICQExport {
 				+ " messages extracted. Writing output files...");
 		File indexFile = writeIndexFile(userData, msgs);
 
-		for (String UIN : userData.keySet()) {
+		for (String UIN : msgs.keySet()) {
 			writeMessageFile(UIN, userData, msgs);
 		}
 
@@ -211,7 +211,10 @@ public class ICQExport {
 		File outDir = new File("html");
 		outDir.mkdirs();
 		File indexFile = new File(outDir, UIN + ".html");
-		String nick = userData.get(UIN).get("NickName");
+		String nick =UIN;
+		if(userData.get(UIN) != null)
+		 nick = userData.get(UIN).get("NickName");
+
 		BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
 
 		bw.write("<html><body style='font-family: monospace'><h1>Message log with "
@@ -232,10 +235,16 @@ public class ICQExport {
 		}
 
 		bw.write("<h2>Properties:</h2><br>");
-		for (Entry<String, String> entry : userData.get(UIN).entrySet()) {
-			if (!"".equals(entry.getValue())) {
-				bw.write(entry.getKey() + ":" + entry.getValue() + "<br>");
+		if(userData.get(UIN) != null) {
+			for (Entry<String, String> entry : userData.get(UIN).entrySet()) {
+				if (!"".equals(entry.getValue())) {
+					bw.write(entry.getKey() + ":" + entry.getValue() + "<br>");
+				}
 			}
+		}
+		else
+		{
+			bw.write("INFO: No user data found in the database for this UIN (potentially not 'authorized friend' or corrupted database)");
 		}
 
 		bw.write("<hr><i>exported by ICQExport</i></body></html>");
@@ -251,18 +260,27 @@ public class ICQExport {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
 
 		bw.write("<html><body><table><tr><th>UIN</th><th>Nickname</th><th>Last seen online</th><th># Messages</tr>");
-		for (String UIN : userData.keySet()) {
+		for (String UIN : msgs.keySet()) {
 			Map<String, String> props = userData.get(UIN);
-			String lastOnlineStr = "Unknown";
-			if (props.containsKey("LastOnlineTime")) {
-				Date lastOnline = new Date(
-						new Long(props.get("LastOnlineTime")).longValue() * 1000L);
-				lastOnlineStr = lastOnline.toString();
+			if(props != null) {
+				String lastOnlineStr = "Unknown";
+				if (props.containsKey("LastOnlineTime")) {
+					Date lastOnline = new Date(
+							new Long(props.get("LastOnlineTime")).longValue() * 1000L);
+					lastOnlineStr = lastOnline.toString();
+				}
+				bw.write("<tr><td><a href=\"" + UIN + ".html\">" + UIN
+						+ "</TD>+<TD>" + props.get("NickName") + "</TD><TD>"
+						+ lastOnlineStr + "</TD><TD>" + msgs.get(UIN).size()
+						+ "</TD></TR>");
 			}
-			bw.write("<tr><td><a href=\"" + UIN + ".html\">" + UIN
-					+ "</TD>+<TD>" + props.get("NickName") + "</TD><TD>"
-					+ lastOnlineStr + "</TD><TD>" + msgs.get(UIN).size()
-					+ "</TD></TR>");
+			else
+			{
+				bw.write("<tr><td><a href=\"" + UIN + ".html\">" + UIN
+						+ "</TD>+<TD><i>User data missing in database</i></TD><TD>"
+						+ "</TD><TD>" + msgs.get(UIN).size()
+						+ "</TD></TR>");
+			}
 		}
 		bw.write("</table><hr><i>exported by ICQExport</i></body></html>");
 		bw.close();
